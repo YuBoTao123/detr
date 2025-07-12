@@ -45,13 +45,13 @@ class FrozenBatchNorm2d(torch.nn.Module):
     def forward(self, x):
         # move reshapes to the beginning
         # to make it fuser-friendly
-        w = self.weight.reshape(1, -1, 1, 1)
+        w = self.weight.reshape(1, -1, 1, 1) # [C] -> [1,C,1,1]
         b = self.bias.reshape(1, -1, 1, 1)
         rv = self.running_var.reshape(1, -1, 1, 1)
         rm = self.running_mean.reshape(1, -1, 1, 1)
         eps = 1e-5
-        scale = w * (rv + eps).rsqrt()
-        bias = b - rm * scale
+        scale = w * (rv + eps).rsqrt() # γ / sqrt(σ² + ε)
+        bias = b - rm * scale  # β - μ * γ / sqrt(σ² + ε)
         return x * scale + bias
 
 
@@ -70,11 +70,11 @@ class BackboneBase(nn.Module):
         self.num_channels = num_channels
 
     def forward(self, tensor_list: NestedTensor):
-        xs = self.body(tensor_list.tensors)
+        xs = self.body(tensor_list.tensors) # 特征提取
         out: Dict[str, NestedTensor] = {}
         for name, x in xs.items():
             m = tensor_list.mask
-            assert m is not None
+            assert m is not None # 对掩码进行下采样匹配特征图尺寸
             mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
             out[name] = NestedTensor(x, mask)
         return out
@@ -86,13 +86,13 @@ class Backbone(BackboneBase):
                  train_backbone: bool,
                  return_interm_layers: bool,
                  dilation: bool):
-        backbone = getattr(torchvision.models, name)(
+        backbone = getattr(torchvision.models, name)( # 通过名称加载 torchvision 中的模型
             replace_stride_with_dilation=[False, False, dilation],
             pretrained=is_main_process(), norm_layer=FrozenBatchNorm2d)
         num_channels = 512 if name in ('resnet18', 'resnet34') else 2048
         super().__init__(backbone, train_backbone, num_channels, return_interm_layers)
 
-
+# 调用父类nn.Sequential的初始化，将两个模块依次存储（索引0为backbone，索引1为position_embedding）
 class Joiner(nn.Sequential):
     def __init__(self, backbone, position_embedding):
         super().__init__(backbone, position_embedding)

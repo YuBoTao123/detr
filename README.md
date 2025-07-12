@@ -210,7 +210,9 @@ The transformer is trained with dropout of 0.1, and the whole model is trained w
 ## Evaluation
 To evaluate DETR R50 on COCO val5k with a single GPU run:
 ```
-python main.py --batch_size 2 --no_aux_loss --eval --resume https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth --coco_path /path/to/coco
+
+# python main.py --batch_size 2 --no_aux_loss --eval --resume https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth --coco_path /path/to/coco
+python main.py --batch_size 2 --no_aux_loss --eval --resume https://dl.fbaipublicfiles.com/detr/detr-r50-e632da11.pth --coco_path H:\coco_data\
 ```
 We provide results for all DETR detection models in this
 [gist](https://gist.github.com/szagoruyko/9c9ebb8455610958f7deaa27845d7918).
@@ -265,3 +267,9 @@ DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICENSE)
 
 # Contributing
 We actively welcome your pull requests! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md) for more info.
+
+# 注意事项
+```angular2html
+python .\inference.py --backbone resnet101 --source_dir .\demo\images\ --output_dir .\demo\outputs\ --resume .\detr-r101-2c7b67e5.pth
+```
+上面提供的权重文件，仅仅是包含了Transformer部分，分类头（但是不包含resnet，torch会自动下载)

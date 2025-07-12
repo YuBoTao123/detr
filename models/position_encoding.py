@@ -8,7 +8,7 @@ from torch import nn
 
 from util.misc import NestedTensor
 
-
+# 这个文件中定义了两种位置编码的方式
 class PositionEmbeddingSine(nn.Module):
     """
     This is a more standard version of the position embedding, very similar to the one
